@@ -7,17 +7,17 @@ make pessoas
 
 rm pessoas.bin
 
-END=10000
+END=10
 POWERS_OF_TEN=1
 for ((i=1;i<=END;i++)); do
     FirstLastName=$(rig | sed -n '1~5p')
     Age=$(shuf  -i 20-120 -n 1)
     if [ "$i" = "$POWERS_OF_TEN" ]
     then
-        time ./pessoas -i "\"$FirstLastName\"" "$Age"
+        time ./pessoas -i "$FirstLastName" "$Age"
         POWERS_OF_TEN=("$((10*POWERS_OF_TEN))")
     else
-        ./pessoas -i "\"$FirstLastName\"" "$Age"
+        ./pessoas -i "$FirstLastName" "$Age"
     fi
     
 done

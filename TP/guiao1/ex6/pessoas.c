@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
         write(fd_bin, p, sizeof(struct pessoa));
     }
 
-    if (!strcmp(argv[1], "-g")) {
+    if (!strcmp(argv[1], "-u")) {
         lseek(fd_bin, 0, SEEK_SET);
         int found = 0;
         while (!found) {
@@ -50,10 +50,16 @@ int main(int argc, char * argv[]) {
                 write(STDOUT_FILENO, "Não encontrado!\n", 18);
                 break;
             }
-            if (strcmp(p->nome, argv[2])) {
+            printf("%s\n", p->nome);
+            if (!strncmp(p->nome, argv[2], strlen(argv[2]))) {
                 write(STDOUT_FILENO, "Encontrado: ", 13);
                 write(STDOUT_FILENO, p->nome, NAME_MAX_LEN);
                 write(STDOUT_FILENO, "\n", 1);
+                printf("Idade: %d\n.", p->idade);
+                lseek(fd_bin, -1 * (sizeof(struct pessoa)), SEEK_CUR);
+                p->idade = atoi(argv[3]);
+                write(fd_bin, p, sizeof(struct pessoa));
+                printf("Nova Idade: %d\n.", p->idade);
                 found = 1;
             }
         }
