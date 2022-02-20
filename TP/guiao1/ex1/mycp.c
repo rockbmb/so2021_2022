@@ -8,7 +8,7 @@
 int main (int argc, char * argv[]) {
 
     if (argc < 3) {
-        write(2, "Número de argumentos insuficiente!\n", 37);
+        write(STDERR_FILENO, "Número de argumentos insuficiente!\n", 37);
         return 1;
     }
 
@@ -26,7 +26,7 @@ int main (int argc, char * argv[]) {
 
     int buf_len = atoi(argv[3]);
     if (buf_len <= 0) {
-        write(2, "Comprimento de buffer inválido!\n", 34);
+        write(STDERR_FILENO, "Comprimento de buffer inválido!\n", 34);
         return 1;
     }
 
@@ -54,6 +54,4 @@ int main (int argc, char * argv[]) {
     close(fd_out);
 
     return 0;
-
-
 }
