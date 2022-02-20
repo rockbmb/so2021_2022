@@ -34,34 +34,36 @@ int main(int argc, char * argv[]) {
     }
 
     if (!strcmp(argv[1], "-i")) {
-        lseek(fd_bin, 0, SEEK_END);
+        off_t off = lseek(fd_bin, 0, SEEK_END);
         strncpy(p->nome, argv[2], NAME_MAX_LEN);
         p->idade = atoi(argv[3]);
 
         write(fd_bin, p, sizeof(struct pessoa));
+        char buf[20];
+        // Registos começam em 1.
+        int written = snprintf(buf, 20, "registo %lu\n", 1 + off/(sizeof(struct pessoa)));
+        write(STDOUT_FILENO, buf, written);
     }
 
     if (!strcmp(argv[1], "-u")) {
-        lseek(fd_bin, 0, SEEK_SET);
-        int found = 0;
-        while (!found) {
-            int r = read(fd_bin, p, sizeof(struct pessoa));
-            if (r == 0) {
-                write(STDOUT_FILENO, "Não encontrado!\n", 18);
-                break;
-            }
-            if (!strncmp(p->nome, argv[2], strlen(argv[2]))) {
-                write(STDOUT_FILENO, "Encontrado: ", 13);
-                write(STDOUT_FILENO, p->nome, NAME_MAX_LEN);
-                write(STDOUT_FILENO, "\n", 1);
-                printf("Idade: %d\n.", p->idade);
-                lseek(fd_bin, -1 * (sizeof(struct pessoa)), SEEK_CUR);
-                p->idade = atoi(argv[3]);
-                write(fd_bin, p, sizeof(struct pessoa));
-                printf("Nova Idade: %d\n.", p->idade);
-                found = 1;
-            }
+        // Registos começam em 1, necessário decrementar.
+        int num = atoi(argv[2]) - 1;
+        int new_age = atoi(argv[3]);
+
+        lseek(fd_bin, num * (sizeof(struct pessoa)), SEEK_SET);
+
+        int r = read(fd_bin, p, sizeof(struct pessoa));
+        if (r < 0) {
+            write(STDERR_FILENO, "Erro a ler de ficheiro binário!\n", 34);
+            return 0;
         }
+
+        printf("Idade: %d.\n", p->idade);
+        p->idade = new_age;
+        lseek(fd_bin, -1 * (sizeof(struct pessoa)), SEEK_CUR);
+        write(fd_bin, p, sizeof(struct pessoa));
+        printf("Nova Idade: %d\n.", p->idade);
+
     }
 
     close(fd_bin);
