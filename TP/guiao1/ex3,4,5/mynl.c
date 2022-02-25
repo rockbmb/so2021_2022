@@ -13,25 +13,30 @@
 #include "readln2.h"
 #endif
 
-#define BUFSIZ 8
+// Size of the buffer that will hold bytes from the byte descriptor.
+#define BUFSIZ 64
+
+// Maximum amount of bytes to read from each line, in each call to readln2.
+#define LINESIZ 16
 
 int main(int argc, char * argv[]) {
     int count = 1;
-    char * line = malloc(BUFSIZ * sizeof(char));
-    memset(line, BUFSIZ, 0);
+    char * line = malloc(LINESIZ * sizeof(char));
+    memset(line, 0, LINESIZ);
+
 #ifdef SLOW
-    printf("BOOM!");
 #else
-    MYFILE * mf = myopen(STDOUT_FILENO, 16);
-    printf("BOW!");
+    MYFILE * mf = myopen(STDIN_FILENO, BUFSIZ);
 #endif
 
     ssize_t res = 0;
     read_line:
 #ifdef SLOW
-    while (res = readln1(STDIN_FILENO, line, BUFSIZ)) {
+    res = readln1(STDIN_FILENO, line, LINESIZ);
+    while (res) {
 #else
-    while (res = readln2(mf, line, BUFSIZ)) {
+    res = readln2(mf, line, LINESIZ);
+    while (res) {
 #endif
         if (res < 0) {
             perror("Erro a ler de STDIN");
@@ -39,7 +44,7 @@ int main(int argc, char * argv[]) {
         }
 
         if (res == 1) {
-            if (line[res - 1] == '\n') {
+            if (line[0] == '\n') {
                 write(STDOUT_FILENO, "\n", 1);
                 goto read_line;
             }
@@ -49,33 +54,46 @@ int main(int argc, char * argv[]) {
         int written = snprintf(buf, 10, "%6d  ", count);
         write(STDOUT_FILENO, buf, 10);
 
-        if (line[res - 1] == '\n') {
-            write(STDOUT_FILENO, line, res);
-        }
+        // Write first chunk of line to STDOUT, after writing line number.
+        write(STDOUT_FILENO, line, res);
 
-        if ((res == BUFSIZ) && (line[res - 1] != '\n')) {
+        if ((res == LINESIZ) && (line[res - 1] != '\n')) {
             bool more = true;
-            write(STDOUT_FILENO, line, res);
             while (more) {
+                memset(line, 0, LINESIZ);
 #ifdef SLOW
-                res = readln1(STDIN_FILENO, line, BUFSIZ);
+                res = readln1(STDIN_FILENO, line, LINESIZ);
 #else
-                res = readln2(mf, line, BUFSIZ);
+                res = readln2(mf, line, LINESIZ);
 #endif
-                //printf("res: %ld\n", res);
                 if (res < 0) {
                     perror("Erro a ler de STDIN");
                     return 1;
                 }
                 write(STDOUT_FILENO, line, res);
-                if ((res < BUFSIZ) || (line[res - 1] == '\n')) {
+
+                // If this is true, it means the line has been read in its,
+                // entirety, and written to STDOUT.
+                if ((res < LINESIZ) || (line[res - 1] == '\n')) {
                     more = false;
                 }
             }
         }
 
+        /* Necessário porque se a linha lida terminar sem newline, quando
+        for escrita em STDOUT vai aparecer em cima do "prompt".
+        */
+        if (line[res - 1] != '\n') {
+            write(STDOUT_FILENO, "\n", 1);
+        }
         count++;
-        memset(line, BUFSIZ, 0);
+        memset(line, 0, LINESIZ);
+
+#ifdef SLOW
+        res = readln1(STDIN_FILENO, line, LINESIZ);
+#else
+        res = readln2(mf, line, LINESIZ);
+#endif
     }
 
 #ifdef SLOW
@@ -83,4 +101,4 @@ int main(int argc, char * argv[]) {
     myclose(mf);
 #endif
     return 0;
-}
+}/*12345667890*/

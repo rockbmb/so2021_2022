@@ -1,3 +1,8 @@
+# Primeira versão de readln:
+#make SLOW=1
+# Segunda version de readln:
+#make
+
 default: mynl
 
 readln1.o: readln1.c readln1.h

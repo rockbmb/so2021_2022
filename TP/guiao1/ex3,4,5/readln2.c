@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include "readln2.h"
@@ -39,7 +38,6 @@ void myclose(MYFILE * mf) {
 
 ssize_t readln2(MYFILE * mf, char *line, size_t size) {
     size_t index = 0;
-    char c;
     int read_res = 0;
     bool end_of_line = false;
 
@@ -49,29 +47,33 @@ ssize_t readln2(MYFILE * mf, char *line, size_t size) {
             mf->start = 0;
             read_res = read(mf->fd, mf->ptr, mf->maxCap);
             if (read_res < 0) {
-               perror("Erro a ler do descritor fornecido");
+                perror("Erro a ler do descritor fornecido");
                 return read_res;
             }
+            // If there's nothing to read from STDIN, it means we've reached
+            // the end of the line.
             if (read_res == 0) {
-                return read_res;
+                end_of_line = true;
             }
             mf->currCap = read_res;
         }
 
         int i = mf->start;
-        while((i < mf->start + mf->currCap) && (index < size) && !end_of_line) {
+        while((i < (mf->start + mf->currCap)) && (index < size)) {
             line[index] = mf->ptr[i];
             mf->start++;
             mf->currCap--;
             index++;
-            if (mf->ptr[i] == '\n') {
-                end_of_line = true;
-            }
             i++;
+            // If the last character written to `line` is \n or \0, we've
+            // reached the end of the line, so both this inner loop and
+            // the outer one can stop executing.
+            if ((mf->ptr[i - 1] == '\n') || (mf->ptr[i - 1] == 0)) {
+                end_of_line = true;
+                break;
+            }
         }
     }
 
     return index;
-
-    return 0;
 }
