@@ -22,7 +22,7 @@
 int main(int argc, char * argv[]) {
     int count = 1;
     char * line = malloc(LINESIZ * sizeof(char));
-    memset(line, 0, LINESIZ);
+    memset(line, 0, LINESIZ * sizeof(char));
 
 #ifdef SLOW
 #else
@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
         if ((res == LINESIZ) && (line[res - 1] != '\n')) {
             bool more = true;
             while (more) {
-                memset(line, 0, LINESIZ);
+                memset(line, 0, LINESIZ * sizeof(char));
 #ifdef SLOW
                 res = readln1(STDIN_FILENO, line, LINESIZ);
 #else
@@ -89,7 +89,7 @@ int main(int argc, char * argv[]) {
             write(STDOUT_FILENO, "\n", 1);
         }
         count++;
-        memset(line, 0, LINESIZ);
+        memset(line, 0, LINESIZ * sizeof(char));
 
 #ifdef SLOW
         res = readln1(STDIN_FILENO, line, LINESIZ);

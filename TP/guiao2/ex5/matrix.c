@@ -6,8 +6,8 @@
 
 #include "gen.h"
 
-#define LINES 5
-#define COLS 20
+#define LINES 10
+#define COLS 50
 #define MAXNUM 1000
 
 // Number to be found
@@ -45,29 +45,23 @@ int main(int argc, char * argv[]) {
 
     pid_t children[LINES];
     int statuses[LINES];
-    int results[LINES];
-    int fds[LINES][2];
 
     int i;
 
     for (i = 0; i < LINES; i++) {
-        pipe(fds[i]);
         children[i] = fork();
         pid_t parent = getppid();
         int child_res = 0;
 
         if (!children[i]) {
-            close(fds[i][0]);
             pid_t child = getpid();
             int res = search(&random[i * COLS], COLS, NEEDLE);
-            printf("Eu sou o filho %d, o meu pai é %d, e encontrei o número na coluna %d.\n", child, self, res);
-            write(fds[i][1], &child_res, sizeof(child_res));
-            close(fds[i][1]);
+            if (res == -1) {
+                printf("Eu sou o filho %d, o meu pai é %d, e não encontrei o número %d na linha %d!\n", child, self, NEEDLE, i);
+            } else {
+                printf("Eu sou o filho %d, o meu pai é %d, e encontrei o número %d na coluna %d da linha %d.\n", child, self, NEEDLE, res, i);
+            }
             _exit(0);
-        } else {
-            close(fds[i][1]);
-            read(fds[i][0], &results[i], sizeof(int));
-            close(fds[i][0]);
         }
     }
 
@@ -75,14 +69,7 @@ int main(int argc, char * argv[]) {
     pid_t wpid;
     // Espera pelo término de quaisquer outros processos-filho.
     while ((wpid = waitpid(-1, &st, 0)) >= 0) {
-        /*if (WIFEXITED(st)) {
-            int child_res = WEXITSTATUS(st);
-            if (child_res == -1) {
-                printf("Eu sou o pai %d, e o meu filho %d não encontrou o número %d na linha.\n", self, wpid, NEEDLE);
-            } else {
-                printf("Eu sou o pai %d, e o meu filho %d encontrou o número %d.\n", self, wpid, NEEDLE);
-            }
-        } else */if (!WIFEXITED(st)) {
+        if (!WIFEXITED(st)) {
             printf("Eu sou o pai %d, e o meu filho %d terminou mal!\n", self, wpid);
         }
     }
