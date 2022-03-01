@@ -14,10 +14,10 @@
 #endif
 
 // Size of the buffer that will hold bytes from the byte descriptor.
-#define BUFSIZ 64
+#define BUFSIZ 8192
 
 // Maximum amount of bytes to read from each line, in each call to readln2.
-#define LINESIZ 16
+#define LINESIZ 4096
 
 int main(int argc, char * argv[]) {
     int count = 1;
@@ -50,9 +50,11 @@ int main(int argc, char * argv[]) {
             }
         }
 
-        char buf[10];
-        int written = snprintf(buf, 10, "%6d  ", count);
-        write(STDOUT_FILENO, buf, 10);
+        char buf[8];
+        int written = snprintf(buf, 8, "%6d\t", count);
+        // Not necessary to write to STDOUT the '\0' that snprintf
+        // inserts at the end of buf, so only write 7 bytes.
+        write(STDOUT_FILENO, buf, 7);
 
         // Write first chunk of line to STDOUT, after writing line number.
         write(STDOUT_FILENO, line, res);
@@ -100,5 +102,7 @@ int main(int argc, char * argv[]) {
 #else
     myclose(mf);
 #endif
+
+    free(line);
     return 0;
 }/*12345667890*/
