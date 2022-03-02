@@ -68,7 +68,7 @@ ssize_t readln2(MYFILE * mf, char *line, size_t size) {
             // If the last character written to `line` is \n or \0, we've
             // reached the end of the line, so both this inner loop and
             // the outer one can stop executing.
-            if ((mf->ptr[i - 1] == '\n') || (mf->ptr[i - 1] == 0)) {
+            if ((mf->ptr[i - 1] == '\n')) {
                 end_of_line = true;
                 break;
             }

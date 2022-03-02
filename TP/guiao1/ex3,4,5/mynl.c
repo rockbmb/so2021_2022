@@ -29,8 +29,10 @@ int main(int argc, char * argv[]) {
     MYFILE * mf = myopen(STDIN_FILENO, BUFSIZ);
 #endif
 
+    bool line_is_just_newline = false;
     ssize_t res = 0;
-    read_line:
+
+    while_lab:
 #ifdef SLOW
     res = readln1(STDIN_FILENO, line, LINESIZ);
     while (res) {
@@ -45,8 +47,8 @@ int main(int argc, char * argv[]) {
 
         if (res == 1) {
             if (line[0] == '\n') {
-                write(STDOUT_FILENO, "\n", 1);
-                goto read_line;
+                line_is_just_newline = true;
+                goto newline_handler;
             }
         }
 
@@ -88,14 +90,23 @@ int main(int argc, char * argv[]) {
         if (line[res - 1] != '\n') {
             write(STDOUT_FILENO, "\n", 1);
         }
+
         count++;
         memset(line, 0, LINESIZ * sizeof(char));
 
+        newline_handler:
 #ifdef SLOW
         res = readln1(STDIN_FILENO, line, LINESIZ);
 #else
         res = readln2(mf, line, LINESIZ);
 #endif
+
+        if (line_is_just_newline) {
+            line_is_just_newline = false;
+            char newln[9];
+            int written = snprintf(newln, 9, "%7c\n", ' ');
+            write(STDOUT_FILENO, newln, 8);
+        }
     }
 
 #ifdef SLOW
