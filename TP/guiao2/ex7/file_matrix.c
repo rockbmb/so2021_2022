@@ -1,14 +1,12 @@
 #include <unistd.h> /* chamadas ao sistema: defs e decls essenciais */
 #include <fcntl.h> /* O_RDONLY, O_WRONLY, O_CREAT, O_* */
 #include <sys/wait.h> /* chamadas wait*() e macros relacionadas */
-#include <sys/mman.h>
 #include <time.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #define LINES 10
 #define COLS 25000

@@ -25,7 +25,7 @@ ssize_t readln1(int fd, char *line, size_t size) {
         }
         line[index] = c;
         index++;
-        if (c == '\n' || c == '\0') {
+        if (c == '\n') {
             end_of_line = true;
         } else {
             read_res = read(fd, &c, 1);

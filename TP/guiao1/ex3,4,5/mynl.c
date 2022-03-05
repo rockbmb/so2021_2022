@@ -32,7 +32,6 @@ int main(int argc, char * argv[]) {
     bool line_is_just_newline = false;
     ssize_t res = 0;
 
-    while_lab:
 #ifdef SLOW
     res = readln1(STDIN_FILENO, line, LINESIZ);
     while (res) {
@@ -52,7 +51,7 @@ int main(int argc, char * argv[]) {
             }
         }
 
-        char buf[8];
+        static char buf[8];
         int written = snprintf(buf, 8, "%6d\t", count);
         // Not necessary to write to STDOUT the '\0' that snprintf
         // inserts at the end of buf, so only write 7 bytes.
@@ -103,7 +102,7 @@ int main(int argc, char * argv[]) {
 
         if (line_is_just_newline) {
             line_is_just_newline = false;
-            char newln[9];
+            static char newln[9];
             int written = snprintf(newln, 9, "%7c\n", ' ');
             write(STDOUT_FILENO, newln, 8);
         }
