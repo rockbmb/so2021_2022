@@ -1,0 +1,1 @@
+int mysystem(char *command);
