@@ -6,14 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define _POSIX_C_SOURCE 200809L
-
-#define NAME_MAX_LEN 40
-
-typedef struct pessoa {
-    char nome[NAME_MAX_LEN];
-    int idade;
-} * Pessoa;
+#include "pessoa.h"
 
 int main(int argc, char * argv[]) {
     if (argc < 4) {
@@ -30,40 +23,43 @@ int main(int argc, char * argv[]) {
     Pessoa p = malloc (sizeof(struct pessoa));
     if (p == NULL) {
         write(STDERR_FILENO, "malloc falhou!", 15);
+        close(fd_bin);
         return 1;
     }
 
     if (!strcmp(argv[1], "-i")) {
-        off_t off = lseek(fd_bin, 0, SEEK_END);
-        strncpy(p->nome, argv[2], NAME_MAX_LEN);
-        p->idade = atoi(argv[3]);
+        off_t record_number = insere_pessoa(fd_bin, argv[2], atoi(argv[3]));
 
-        write(fd_bin, p, sizeof(struct pessoa));
         char buf[20];
-        // Registos começam em 1.
-        int written = snprintf(buf, 20, "registo %lu\n", 1 + off/(sizeof(struct pessoa)));
+        off_t offset = (record_number - 1) * (sizeof(struct pessoa));
+        int written = snprintf(buf, 20, "registo %lu\n", record_number);
         write(STDOUT_FILENO, buf, written);
     }
 
-    if (!strcmp(argv[1], "-u")) {
-        // Registos começam em 1, necessário decrementar.
-        int num = atoi(argv[2]) - 1;
-        int new_age = atoi(argv[3]);
-
-        lseek(fd_bin, num * (sizeof(struct pessoa)), SEEK_SET);
-
-        int r = read(fd_bin, p, sizeof(struct pessoa));
-        if (r < 0) {
-            write(STDERR_FILENO, "Erro a ler de ficheiro binário!\n", 34);
-            return 0;
+    if (!strcmp(argv[1], "-u_old")) {
+        int new = atoi(argv[3]);
+        int old = atualiza_idade_1(fd_bin, argv[2], new);
+        if (old == -1) {
+            write(STDOUT_FILENO, "Não encontrado!\n", 18);
+            return 1;
+        } else {
+            write(STDOUT_FILENO, "Encontrado registo. \n", 22);
+            printf("Idade anterior: %d\n", old);
+            printf("Nova Idade: %d\n", new);
         }
+    }
 
-        printf("Idade: %d.\n", p->idade);
-        p->idade = new_age;
-        lseek(fd_bin, -1 * (sizeof(struct pessoa)), SEEK_CUR);
-        write(fd_bin, p, sizeof(struct pessoa));
-        printf("Nova Idade: %d\n.", p->idade);
-
+    if (!strcmp(argv[1], "-u_new")) {
+        // Registos começam em 1, necessário decrementar.
+        int new = atoi(argv[3]);
+        int old = atualiza_idade_2(fd_bin, atoi(argv[2]), new);
+        
+        if (old < 0) {
+            write(STDERR_FILENO, "Erro a ler de ficheiro binário!\n", 34);
+            return 1;
+        }
+        printf("Idade anterior: %d\n", old);
+        printf("Nova Idade: %d\n", new);
     }
 
     close(fd_bin);

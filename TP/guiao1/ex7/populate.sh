@@ -14,4 +14,5 @@ for ((i=1;i<=END;i++)); do
     ./pessoas -i "$FirstLastName" "$Age"
 done
 
-# time ./pessoas -u 1000 45
+# time ./pessoas -u_old "FirstName LastName" 45
+# time ./pessoas -u_new 1000 45
