@@ -13,7 +13,7 @@
 // Number to be found
 #define NEEDLE 1000
 
-int search(int * haystack, int len, int needle) {
+int search(int *haystack, int len, int needle) {
     int k;
     int res = -1;
 
@@ -30,15 +30,16 @@ int search(int * haystack, int len, int needle) {
 int main(int argc, char * argv[]) {
     pid_t self = getpid();
 
-    int *random = gen_matrix(LINES, COLS, MAXNUM);
+    int **random = gen_mat(LINES, COLS, MAXNUM);
 
-    random[2 * COLS + 7] = 1000;
+    random[2][7] = 1000;
+    random[5][43] = 1000;
 
     int lin, col;
     srand(time(NULL));
     for(lin = 0; lin < LINES; lin++) {
         for(col = 0; col < COLS; col++) {
-            printf("%2d  ", random[lin * COLS + col]);
+            printf("%2d  ", random[lin][col]);
         }
         printf("\n");
     }
@@ -55,7 +56,7 @@ int main(int argc, char * argv[]) {
 
         if (!children[i]) {
             pid_t child = getpid();
-            int res = search(&random[i * COLS], COLS, NEEDLE);
+            int res = search(random[i], COLS, NEEDLE);
             if (res == -1) {
                 printf("Eu sou o filho %d, o meu pai é %d, e não encontrei o número %d na linha %d!\n", child, self, NEEDLE, i);
             } else {
