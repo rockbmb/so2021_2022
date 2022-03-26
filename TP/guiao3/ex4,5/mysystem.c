@@ -48,6 +48,19 @@ int process_command(char * command, char **args, int count) {
     return 0;
 }
 
+/**
+ * @brief Dada uma string com redirecionamentos IO, retira os nomes do ficheiros
+ * para onde se redirecionam os descritores STD(IN|OUT|ERR).
+ * 
+ * @param io_redirs String com redirecionamentos no formato descrito em myshell.c
+ * e.g. < in.txt > out.txt 2> err.txt
+ * @param in_filename Ficheiro de onde se lerá  STDIN para o comando a ser executado. Opcional.
+ * @param out_filename Ficheiro para onde se escreverá o STDOUT do comando a ser executado. Opcional.
+ * @param err_filename Ficheiro para onde se escreverá o STDERR do comando a ser executado. Opcional.
+ * 
+ * Os três argumentos finais, que são sentinelas de output, são apontadores para strings, cuja memória
+ * será alocada *nesta* função, mas que são declarados em mysystem(), devendo também ser libertados lá.
+ */
 void process_io_redir(char *io_redirs, char **in_filename, char **out_filename, char **err_filename) {
     int ioredirs_len = strlen(io_redirs);
     char *io_redirs_copy = malloc(sizeof(char) * ioredirs_len);
@@ -57,6 +70,7 @@ void process_io_redir(char *io_redirs, char **in_filename, char **out_filename, 
     char *rest = NULL;
     char *temp, *token;
 
+    // The delimiter string for strtok_r needs a newline, or sometimes execvp will fail without explanation.
     for (token = strtok_r(io_redirs_copy, " \n", &rest); token != NULL; token = strtok_r(NULL, " \n", &rest)) {
         count++;
     }
@@ -109,7 +123,9 @@ void process_io_redir(char *io_redirs, char **in_filename, char **out_filename, 
         ix += 2;
     }
 
-    // There was only an input redirection, return early.
+    /* There was only an output redirection, or an input redir followed by an output redir.
+    Return.
+    */
     if (ix == count) {
         return;
     }

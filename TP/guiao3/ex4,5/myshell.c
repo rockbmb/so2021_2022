@@ -8,6 +8,19 @@
 
 #include "mysystem.h"
 
+/*
+
+Sobre a sintaxe dos comandos:
+
+* O redirecionamento I/O é feito no *fim* da linha, e segue-se necessariamente
+a um (ou mais) caracter(es) '!':
+* O redirecionamento I/O é feito necessariamente na order:
+  * input, output, e depois descritor de erro.
+
+command -arg1 -arg2 ... -argn (!)* < in_file > out_file 2> err_file
+
+*/
+
 int myshell() {
     char *input = malloc(BUFSIZ * sizeof(char));
     memset(input, 0, BUFSIZ);
@@ -62,7 +75,10 @@ start:
             return 0;
         }
 
-        // Se a linha terminar com &, executar em background
+        /*
+        Se a linha terminar com &, executar em background.
+        Se for este o caso, remover o '&' e substituir por '\0'.
+        */
         if(input[read_res - 1] == '&') {
             background = true;
             input[read_res - 1] = '\0';
