@@ -8,41 +8,54 @@
 
 #include "mysystem.h"
 
-int mysystem(char *command){
-
-/*
-*  If command is NULL, then a nonzero value if a shell is available, or 0 if no shell is available.
-*/
-    if (command == NULL) {
-        return 0;
-    }
-
+int command_size(char *command) {
     // Will hold the total number of arguments, including (char *) NULL.
     int count = 0;
 
     char *rest = NULL;
 
-    char *temp, *temp2, *token;
+    char *temp, *token;
     int command_len = strlen(command);
     temp = malloc(sizeof(char) * command_len);
-    temp2 = malloc(sizeof(char) * command_len);
     strncpy(temp, command, command_len);
-    strncpy(temp2, command, command_len);
 
     for (token = strtok_r(temp, " \n", &rest); token != NULL; token = strtok_r(NULL, " \n", &rest)) {
         count++;
     }
 
-    char *exec_args[count + 1];
+    return count;
+}
 
-    rest = NULL;
+/*
+temp, used in strtok_r, has to be passed in as an argument, or when it's freed,
+it'll cause issues accessing elements of args
+*/
+int process_command(char * command, char **args, int count) {
+    char *rest = NULL;
+    char *token;
+
     int i = 0;
-
-    for (exec_args[i] = strtok_r(temp2, " \n", &rest); exec_args[i] != NULL; exec_args[i] = strtok_r(NULL, " \n", &rest)) {
+    // The delimiter string for strtok_r needs a newline, or execvp will fail without explanation.
+    for (args[i] = strtok_r(command, " \n", &rest); args[i] != NULL; args[i] = strtok_r(NULL, " \n", &rest)) {
         i++;
     }
-    exec_args[count] = (char *) NULL;
+    args[count] = (char *) NULL;
 
+    return 0;
+}
+
+int mysystem(char *command) {
+
+    int size = command_size(command);
+    char **exec_args = malloc(sizeof(char *) * (size + 1));
+
+    int command_len = strlen(command);
+    char *temp = malloc(sizeof(char) * command_len);
+    strncpy(temp, command, command_len);
+
+    process_command(temp, exec_args, size);
+
+    int i = 0;
     pid_t child = fork();
 
     if (child < 0) {
@@ -62,8 +75,7 @@ though the child shell terminated by calling _exit(2) with the status 127.
         }
     }
 
-    free(temp);
-    free(temp2);
+    free(exec_args);
 
 /*
 * If all system calls succeed, then the return value is the termination status of the
@@ -86,6 +98,6 @@ return value is -1 and errno is set to indicate the error.
     char test[] = "ls -a -l ../../guiao1/ex3,4,5";
     char test2[] = "pwd";
 
-    int res = mysystem(test2);
+    int res = mysystem(test);
     printf("filho saiu com %d\n", res);
 }*/
