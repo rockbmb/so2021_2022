@@ -15,3 +15,4 @@ mysystem.o: mysystem.c mysystem.h
 clean:
 	-rm mysystem
 	-rm *.o
+	-rm a.out

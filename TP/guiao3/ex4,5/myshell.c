@@ -22,6 +22,16 @@ int myshell() {
 
     do {
 start:
+        /*
+        Important, otherwise commands inserted at one point can affect future ones
+        if they are shorter in length e.g.
+
+        cat ! < test.c > out.txt 2> err.txt
+        cat out.txt
+
+        Bash will error with "2>: No such file or directory".
+        */
+        memset(input, 0, BUFSIZ);
         write_res = write(STDOUT_FILENO, "\033[0;31mMyPrompt\033[0m \033[0;36m$\033[0m ", 34);
         if (write_res < 0) {
             perror("myshell: escrita para terminal falhou!");
