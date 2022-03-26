@@ -1,0 +1,5 @@
+    10	    char *rest = NULL;
+       
+     9	    assert(end != NULL);
+     8	    r = end = strdup("cat | nl | head -n 10 | tail -n 5 | tac < test.c > out");
+     7	    char *end, *r, *tok;

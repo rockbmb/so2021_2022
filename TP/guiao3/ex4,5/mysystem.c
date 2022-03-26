@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "mysystem.h"
 
@@ -30,7 +29,7 @@ int mysystem(char *command){
     strncpy(temp, command, command_len);
     strncpy(temp2, command, command_len);
 
-    for (token = strtok_r(temp, " ", &rest); token != NULL; token = strtok_r(NULL, " ", &rest)) {
+    for (token = strtok_r(temp, " \n", &rest); token != NULL; token = strtok_r(NULL, " \n", &rest)) {
         count++;
     }
 
@@ -39,7 +38,7 @@ int mysystem(char *command){
     rest = NULL;
     int i = 0;
 
-    for (exec_args[i] = strtok_r(temp2, " ", &rest); exec_args[i] != NULL; exec_args[i] = strtok_r(NULL, " ", &rest)) {
+    for (exec_args[i] = strtok_r(temp2, " \n", &rest); exec_args[i] != NULL; exec_args[i] = strtok_r(NULL, " \n", &rest)) {
         i++;
     }
     exec_args[count] = (char *) NULL;
@@ -49,50 +48,6 @@ int mysystem(char *command){
     if (child < 0) {
         perror("mysystem: failed to create child process!");
         return -1;
-    }
-
-    /* Redirecting IO */
-    char *input, *output;
-    int ix;
-    bool in, out, out1, out2, err, err1, err2;
-
-    // Not worth iterating to count + 1, (char *) NULL does not matter.
-    for (ix = 0; ix < count; ix++) {
-        in = !strncmp(exec_args[ix], "<", 1);
-
-        out1 = !strncmp(exec_args[ix], ">", 1); 
-        out2 = !strncmp(exec_args[ix], ">>", 2);
-        out = out1 || out2;
-
-        err1 = !strncmp(exec_args[ix], "2>", 2);
-        err2 =  !strncmp(exec_args[ix], "2>>", 3);
-        err = err1 || err2;
-
-        if (in || out || err) {
-            break;
-        }
-    }
-
-    if (in) {
-        if (exec_args[ix + 1] == NULL) {
-            printf("redir < não tem valor!\n");
-            return 1;
-        }
-        input = exec_args[ix + 1];
-        ix += 2;
-    }
-
-    // Retest
-    out1 = !strncmp(exec_args[ix], ">", 1); 
-    out2 = !strncmp(exec_args[ix], ">>", 2);
-    out = out1 || out2;
-    if (out) {
-        if (exec_args[ix + 1] == NULL) {
-            printf("redir > não tem valor!\n");
-            return 1;
-        }
-        output = exec_args[ix + 1];
-        ix += 2;
     }
 
 /*
