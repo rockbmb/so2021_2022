@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "mysystem.h"
 
@@ -17,6 +18,7 @@ int mysystem(char *command){
         return 0;
     }
 
+    // Will hold the total number of arguments, including (char *) NULL.
     int count = 0;
 
     char *rest = NULL;
@@ -47,6 +49,50 @@ int mysystem(char *command){
     if (child < 0) {
         perror("mysystem: failed to create child process!");
         return -1;
+    }
+
+    /* Redirecting IO */
+    char *input, *output;
+    int ix;
+    bool in, out, out1, out2, err, err1, err2;
+
+    // Not worth iterating to count + 1, (char *) NULL does not matter.
+    for (ix = 0; ix < count; ix++) {
+        in = !strncmp(exec_args[ix], "<", 1);
+
+        out1 = !strncmp(exec_args[ix], ">", 1); 
+        out2 = !strncmp(exec_args[ix], ">>", 2);
+        out = out1 || out2;
+
+        err1 = !strncmp(exec_args[ix], "2>", 2);
+        err2 =  !strncmp(exec_args[ix], "2>>", 3);
+        err = err1 || err2;
+
+        if (in || out || err) {
+            break;
+        }
+    }
+
+    if (in) {
+        if (exec_args[ix + 1] == NULL) {
+            printf("redir < não tem valor!\n");
+            return 1;
+        }
+        input = exec_args[ix + 1];
+        ix += 2;
+    }
+
+    // Retest
+    out1 = !strncmp(exec_args[ix], ">", 1); 
+    out2 = !strncmp(exec_args[ix], ">>", 2);
+    out = out1 || out2;
+    if (out) {
+        if (exec_args[ix + 1] == NULL) {
+            printf("redir > não tem valor!\n");
+            return 1;
+        }
+        output = exec_args[ix + 1];
+        ix += 2;
     }
 
 /*
