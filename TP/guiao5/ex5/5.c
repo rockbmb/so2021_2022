@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <unistd.h> /* chamadas ao sistema: defs e decls essenciais */
 #include <fcntl.h> /* O_RDONLY, O_WRONLY, O_CREAT, O_* */
+#include <sys/wait.h> /* chamadas wait*() e macros relacionadas */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +23,7 @@ int main(int argc, char const *argv[]) {
     }
 
     char *programs[4][5] = {
-        {"grep", "-v", "^#", "5.c", (char *) NULL},
+        {"grep", "-v", "^#", "/etc/passwd", (char *) NULL},
         {"cut", "-f7", "-d:", (char *) NULL},
         {"uniq", (char *) NULL},
         {"wc", "-l", (char *) NULL}
@@ -33,17 +34,23 @@ int main(int argc, char const *argv[]) {
 
         if (!child) {
             int dup_res;
+
+            // Primeiro comando da pipeline
             if (i == 0) {
                 close(pips[i][READEND]);
                 dup_res = dup2(pips[i][WRITEEND], STDOUT_FILENO);
+
                 if (dup_res < 0) {
                     perror("dup2 failed");
                     _exit(1);
                 }
             }
+
+            // Comando intermédio da pipeline
             if ((i > 0) && (i < (program_num - 1))) {
                 close(pips[i - 1][WRITEEND]);
                 dup_res = dup2(pips[i - 1][READEND], STDIN_FILENO);
+                
                 if (dup_res < 0) {
                     perror("dup2 failed");
                     _exit(1);
@@ -51,15 +58,19 @@ int main(int argc, char const *argv[]) {
 
                 close(pips[i][READEND]);
                 dup_res = dup2(pips[i][WRITEEND], STDOUT_FILENO);
+                
                 if (dup_res < 0) {
                     perror("dup2 failed");
                     _exit(1);
                 }
 
             }
+
+            // Último comando da pipeline
             if (i == (program_num - 1)) {
                 close(pips[i - 1][WRITEEND]);
                 dup_res = dup2(pips[i - 1][READEND], STDIN_FILENO);
+                
                 if (dup_res < 0) {
                     perror("dup2 failed");
                     _exit(1);
@@ -67,8 +78,30 @@ int main(int argc, char const *argv[]) {
             }
 
             execvp(programs[i][0], programs[i]);
+        } else {
+            if (i > 0) {
+                close(pips[i - 1][READEND]);
+                close(pips[i - 1][WRITEEND]);
+            }
         }
     }
+
+    int status;
+    while (waitpid(-1, &status, 0) > 0);
+
+    /**
+     * x TODO:
+     * ✓ DONE:
+     * Necessário passar estes closes para dentro do ciclo acima
+     * primeira iteração fecha write-end
+     * intermédias fecham ambas
+     * final fecha read-end
+     * 
+     */
+    /*for (int k = 0; k < program_num - 1; k++) {
+        close(pips[k][READEND]);
+        close(pips[k][WRITEEND]);
+    }*/
 
     return 0;
 }

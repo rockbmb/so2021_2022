@@ -30,6 +30,10 @@ int main (int argc, char *argv[]) {
 
         char buf[BUFSIZ];
         int rd;
+        /**
+         * TODO:
+         * Usar open(fifo, WRONLY) no servidor para evitar race conditions com vários clientes.
+         */
         while(!done) {
             fd = open(fifo, O_RDONLY, 0660);
             rd = read(fd, (char *) &buf, BUFSIZ);

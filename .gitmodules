@@ -1,0 +1,3 @@
+[submodule "Projeto/SDStore"]
+	path = Projeto/SDStore
+	url = git@github.com:Alef-Keuffer/SDStore.git
