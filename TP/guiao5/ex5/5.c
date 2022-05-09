@@ -10,7 +10,7 @@
 #define WRITEEND 1
 
 int main(int argc, char const *argv[]) {
-    int program_num = 4;
+    int program_num = 8;
     int pipe_num = program_num - 1;
     int pips[pipe_num][2];
 
@@ -22,8 +22,12 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    char *programs[4][5] = {
+    char *programs[8][5] = {
         {"grep", "-v", "^#", "/etc/passwd", (char *) NULL},
+        {"nl", (char *) NULL},
+        {"tac", (char *) NULL},
+        {"head", "-n", "10", (char *) NULL},
+        {"tail", "-n", "10", (char *) NULL},
         {"cut", "-f7", "-d:", (char *) NULL},
         {"uniq", (char *) NULL},
         {"wc", "-l", (char *) NULL}
@@ -87,7 +91,9 @@ int main(int argc, char const *argv[]) {
     }
 
     int status;
-    while (waitpid(-1, &status, 0) > 0);
+    while (wait(&status) > 0) {
+        printf("test\n");
+    };
 
     /**
      * x TODO:
